@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
-
+from services.audit_service import log_action
 from database import SessionLocal
 from models.model_update_model import ModelUpdate
 from models.training_round_model import TrainingRound
@@ -43,7 +43,13 @@ def submit_update(
     round.received_updates += 1
 
     db.commit()
-
+    log_action(
+    actor_id=bank_id,
+    action="MODEL_UPDATE_SUBMITTED",
+    entity_type="MODEL_UPDATE",
+    entity_id=update.update_id,
+    details=f"Samples: {samples}"
+    )
     # 3. check aggregation condition
     if round.received_updates >= round.total_banks:
 
@@ -53,7 +59,13 @@ def submit_update(
         from aggregator.aggregator import aggregate_models
 
         s3_path = aggregate_models(round_id)
-
+        log_action(
+        actor_id=bank_id,
+        action="MODEL_UPDATE_SUBMITTED",
+        entity_type="MODEL_UPDATE",
+        entity_id=update.update_id,
+        details=f"Samples: {samples}"
+        )
         round.status = "COMPLETED"
         round.aggregated_model_path = s3_path
         db.commit()

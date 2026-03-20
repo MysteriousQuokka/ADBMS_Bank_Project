@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from datetime import datetime
-
+from services.audit_service import log_action
 from database import SessionLocal
 from models.training_round_model import TrainingRound
 
@@ -29,7 +29,13 @@ def start_training(total_banks: int, db: Session = Depends(get_db)):
     db.add(round)
     db.commit()
     db.refresh(round)
-
+    log_action(
+    actor_id=None,
+    action="TRAINING_STARTED",
+    entity_type="TRAINING_ROUND",
+    entity_id=round.round_id,
+    details=f"Total banks: {total_banks}"
+    )
     return {
         "message": "Training round started",
         "round_id": str(round.round_id)
