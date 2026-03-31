@@ -6,44 +6,45 @@ __pycache__/
 
 # Virtual environment
 venv/
-.env/
+.env
+.env.*
 
 # IDE
 .vscode/
 .idea/
 
-# OS files
+# OS
 .DS_Store
 Thumbs.db
 
 # Logs
 *.log
 
-# Database
-*.sqlite3
+# Database backups
+*.sql
+*.db
 
 # Secrets
-.env
-*.env
 .aws/
 credentials
 
-# Model files (large)
+# Model files
 *.pkl
 *.joblib
 
-# S3 temp files
+# Temp files
 temp_model_*.pkl
 
-# Backup files
-*.sql
+# Environment configs
+backend/.env
+bank_node/.env
 
-# Node modules (if frontend later)
-node_modules/
-
-# pytest cache
+# pytest
 .pytest_cache/
 
 # Coverage
 .coverage
 htmlcov/
+
+# Node (future frontend)
+node_modules/

@@ -11,22 +11,22 @@ from sqlalchemy.sql import func
 import uuid
 from services.audit_service import log_action
 from database import Base
+from models.audit_log_model import AuditLog
 
+# class AuditLog(Base):
+#     __tablename__ = "audit_logs"
 
-class AuditLog(Base):
-    __tablename__ = "audit_logs"
+#     log_id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
 
-    log_id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+#     actor_id = Column(UUID(as_uuid=True), ForeignKey("users.user_id"))
 
-    actor_id = Column(UUID(as_uuid=True), ForeignKey("users.user_id"))
+#     action = Column(String)
+#     entity_type = Column(String)
+#     entity_id = Column(UUID(as_uuid=True))
 
-    action = Column(String)
-    entity_type = Column(String)
-    entity_id = Column(UUID(as_uuid=True))
+#     details = Column(Text)
 
-    details = Column(Text)
-
-    created_at = Column(TIMESTAMP, server_default=func.now())
+#     created_at = Column(TIMESTAMP, server_default=func.now())
 router = APIRouter(prefix="/auth", tags=["Authentication"])
 
 
