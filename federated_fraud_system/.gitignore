@@ -1,0 +1,49 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Virtual environment
+venv/
+.env/
+
+# IDE
+.vscode/
+.idea/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Database
+*.sqlite3
+
+# Secrets
+.env
+*.env
+.aws/
+credentials
+
+# Model files (large)
+*.pkl
+*.joblib
+
+# S3 temp files
+temp_model_*.pkl
+
+# Backup files
+*.sql
+
+# Node modules (if frontend later)
+node_modules/
+
+# pytest cache
+.pytest_cache/
+
+# Coverage
+.coverage
+htmlcov/
