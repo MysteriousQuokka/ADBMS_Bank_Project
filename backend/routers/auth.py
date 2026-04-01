@@ -1,32 +1,11 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
-from backend.schemas.user_schema import RegisterRequest
-from backend.schemas.user_schema import LoginRequest
+from backend.schemas.user_schema import RegisterRequest, LoginRequest
 from backend.database import SessionLocal
 from backend.models.user_model import User
 from backend.models.bank_model import Bank
-from sqlalchemy import Column, String, TIMESTAMP, ForeignKey, Text
-from sqlalchemy.dialects.postgresql import UUID
-from sqlalchemy.sql import func
-import uuid
 from backend.services.audit_service import log_action
-from backend.database import Base
-from backend.models.audit_log_model import AuditLog
 
-# class AuditLog(Base):
-#     __tablename__ = "audit_logs"
-
-#     log_id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-
-#     actor_id = Column(UUID(as_uuid=True), ForeignKey("users.user_id"))
-
-#     action = Column(String)
-#     entity_type = Column(String)
-#     entity_id = Column(UUID(as_uuid=True))
-
-#     details = Column(Text)
-
-#     created_at = Column(TIMESTAMP, server_default=func.now())
 router = APIRouter(prefix="/auth", tags=["Authentication"])
 
 
@@ -38,33 +17,54 @@ def get_db():
         db.close()
 
 
+# ---------------- REGISTER ----------------
 @router.post("/register")
 def register_user(data: RegisterRequest, db: Session = Depends(get_db)):
 
-    bank = Bank(bank_name=data.bank_name)
+    role = data.role.upper()
 
-    db.add(bank)
-    db.commit()
-    db.refresh(bank)
+    if role not in ["CENTRAL_ADMIN", "BANK_ADMIN", "AUDITOR"]:
+        return {"error": "Invalid role"}
+
+    bank = None
+
+    # Only BANK_ADMIN creates a bank
+    if role == "BANK_ADMIN":
+        if not data.bank_name:
+            return {"error": "Bank name required for BANK_ADMIN"}
+
+        bank = Bank(bank_name=data.bank_name)
+        db.add(bank)
+        db.commit()
+        db.refresh(bank)
 
     user = User(
         email=data.email,
         password_hash=data.password,
-        role="BANK_ADMIN",
-        bank_id=bank.bank_id
+        role=role,
+        bank_id=bank.bank_id if bank else None
     )
 
     db.add(user)
     db.commit()
-    log_action(
-    actor_id=user.user_id,
-    action="USER_REGISTERED",
-    entity_type="USER",
-    entity_id=user.user_id,
-    details=f"Bank created: {bank.bank_name}"
-    )
-    return {"message": "User registered"}
+    db.refresh(user)
 
+    # Audit log
+    log_action(
+        actor_id=user.user_id,
+        action="USER_REGISTERED",
+        entity_type="USER",
+        entity_id=user.user_id,
+        details=f"Role: {role}, Bank: {bank.bank_name if bank else 'N/A'}"
+    )
+
+    return {
+        "message": "User registered",
+        "role": role
+    }
+
+
+# ---------------- LOGIN ----------------
 @router.post("/login")
 def login_user(data: LoginRequest, db: Session = Depends(get_db)):
 
@@ -78,5 +78,6 @@ def login_user(data: LoginRequest, db: Session = Depends(get_db)):
 
     return {
         "message": "Login successful",
-        "bank_id": str(user.bank_id)
+        "role": user.role,
+        "bank_id": str(user.bank_id) if user.bank_id else None
     }
