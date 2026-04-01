@@ -3,7 +3,7 @@ from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.sql import func
 import uuid
 
-from database import Base
+from backend.database import Base
 
 class ModelUpdate(Base):
     __tablename__ = "model_updates"
