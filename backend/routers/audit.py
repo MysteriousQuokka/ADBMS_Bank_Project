@@ -1,8 +1,8 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
-from database import SessionLocal
-from models.audit_log_model import AuditLog
+from backend.database import SessionLocal
+from backend.models.audit_log_model import AuditLog
 
 router = APIRouter(prefix="/audit", tags=["Audit"])
 

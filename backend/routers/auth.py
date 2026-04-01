@@ -1,17 +1,17 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
-from schemas.user_schema import RegisterRequest
-from schemas.user_schema import LoginRequest
-from database import SessionLocal
-from models.user_model import User
-from models.bank_model import Bank
+from backend.schemas.user_schema import RegisterRequest
+from backend.schemas.user_schema import LoginRequest
+from backend.database import SessionLocal
+from backend.models.user_model import User
+from backend.models.bank_model import Bank
 from sqlalchemy import Column, String, TIMESTAMP, ForeignKey, Text
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.sql import func
 import uuid
-from services.audit_service import log_action
-from database import Base
-from models.audit_log_model import AuditLog
+from backend.services.audit_service import log_action
+from backend.database import Base
+from backend.models.audit_log_model import AuditLog
 
 # class AuditLog(Base):
 #     __tablename__ = "audit_logs"

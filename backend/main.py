@@ -1,17 +1,17 @@
 from fastapi import FastAPI
 
-from database import Base, engine
+from backend.database import Base, engine
 
-from routers import auth
-from routers import training
-from routers import updates
-from routers import audit
-from models import bank_model
-from models import user_model
-from models import model_registry
-from models import training_round_model
-from models import model_update_model
-from models import audit_log_model   
+from backend.routers import auth
+from backend.routers import training
+from backend.routers import updates
+from backend.routers import audit
+from backend.models import bank_model
+from backend.models import user_model
+from backend.models import model_registry
+from backend.models import training_round_model
+from backend.models import model_update_model
+from backend.models import audit_log_model   
 
 # create tables
 Base.metadata.create_all(bind=engine)

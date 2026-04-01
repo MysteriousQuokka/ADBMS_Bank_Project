@@ -1,9 +1,9 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from datetime import datetime
-from services.audit_service import log_action
-from database import SessionLocal
-from models.training_round_model import TrainingRound
+from backend.services.audit_service import log_action
+from backend.database import SessionLocal
+from backend.models.training_round_model import TrainingRound
 
 router = APIRouter(prefix="/training", tags=["Training"])
 
