@@ -1,0 +1,50 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Virtual environment
+venv/
+.env
+.env.*
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Database backups
+*.sql
+*.db
+
+# Secrets
+.aws/
+credentials
+
+# Model files
+*.pkl
+*.joblib
+
+# Temp files
+temp_model_*.pkl
+
+# Environment configs
+backend/.env
+bank_node/.env
+
+# pytest
+.pytest_cache/
+
+# Coverage
+.coverage
+htmlcov/
+
+# Node (future frontend)
+node_modules/
