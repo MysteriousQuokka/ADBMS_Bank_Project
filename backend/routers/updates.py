@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
-from services.audit_service import log_action
+from backend.services.audit_service import log_action
 from backend.database import SessionLocal
 from backend.models.model_update_model import ModelUpdate
 from backend.models.training_round_model import TrainingRound
