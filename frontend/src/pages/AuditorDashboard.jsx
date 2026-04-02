@@ -2,26 +2,25 @@ import Navbar from "../components/Navbar";
 import API from "../services/api";
 import { useEffect, useState } from "react";
 
-function AdminDashboard() {
-  const [updates, setUpdates] = useState([]);
+function AuditorDashboard() {
+  const [logs, setLogs] = useState([]);
 
   useEffect(() => {
-    API.get("/updates").then(res => setUpdates(res.data));
+    API.get("/audit").then(res => setLogs(res.data));
   }, []);
 
   return (
     <div>
       <Navbar />
-      <h2>Central Admin</h2>
+      <h2>Audit Logs</h2>
 
-      {updates.map(u => (
-        <div key={u.id}>
-          <p>{u.version}</p>
-          <button>Approve</button>
+      {logs.map(log => (
+        <div key={log.log_id}>
+          <p>{log.action}</p>
         </div>
       ))}
     </div>
   );
 }
 
-export default AdminDashboard;
+export default AuditorDashboard;
