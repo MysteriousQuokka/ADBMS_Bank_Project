@@ -10,22 +10,44 @@ function Register() {
 
   const navigate = useNavigate();
 
+  // const handleRegister = async () => {
+  //   try {
+  //     await API.post("/auth/register", {
+  //       email,
+  //       password,
+  //       role,
+  //       bank_name: role === "BANK_ADMIN" ? bankName : null
+  //     });
+
+  //     alert("Registered successfully. Please login.");
+  //     navigate("/");
+
+  //   } catch (err) {
+  //     alert("User already exists or error occurred");
+  //   }
+  // };
+
   const handleRegister = async () => {
-    try {
-      await API.post("/auth/register", {
-        email,
-        password,
-        role,
-        bank_name: role === "BANK_ADMIN" ? bankName : null
-      });
+  try {
+    const res = await API.post("/auth/register", {
+      email,
+      password,
+      role,
+      bank_name: role === "BANK_ADMIN" ? bankName : null
+    });
 
-      alert("Registered successfully. Please login.");
-      navigate("/");
-
-    } catch (err) {
-      alert("User already exists or error occurred");
+    if (res.data.error) {
+      alert(res.data.error);
+      return;
     }
-  };
+
+    alert("Registered successfully. Please login.");
+    navigate("/");
+
+  } catch (err) {
+    alert(err.response?.data?.detail || "Something went wrong");
+  }
+};
 
   return (
     <div>
