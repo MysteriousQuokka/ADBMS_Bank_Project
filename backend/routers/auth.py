@@ -23,24 +23,36 @@ def register_user(data: RegisterRequest, db: Session = Depends(get_db)):
 
     role = data.role.upper()
 
+    # ✅ Role validation
     if role not in ["CENTRAL_ADMIN", "BANK_ADMIN", "AUDITOR"]:
         return {"error": "Invalid role"}
 
+    # ✅ Duplicate user check
+    existing_user = db.query(User).filter(User.email == data.email).first()
+    if existing_user:
+        return {"error": "User already exists"}
+
     bank = None
 
-    # Only BANK_ADMIN creates a bank
+    # ✅ BANK_ADMIN must create bank
     if role == "BANK_ADMIN":
         if not data.bank_name:
             return {"error": "Bank name required for BANK_ADMIN"}
+
+        # Optional: prevent duplicate banks
+        existing_bank = db.query(Bank).filter(Bank.bank_name == data.bank_name).first()
+        if existing_bank:
+            return {"error": "Bank already exists"}
 
         bank = Bank(bank_name=data.bank_name)
         db.add(bank)
         db.commit()
         db.refresh(bank)
 
+    # ✅ Create user
     user = User(
         email=data.email,
-        password_hash=data.password,
+        password_hash=data.password,  # (later: hash this)
         role=role,
         bank_id=bank.bank_id if bank else None
     )
@@ -49,7 +61,7 @@ def register_user(data: RegisterRequest, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(user)
 
-    # Audit log
+    # ✅ Audit log
     log_action(
         actor_id=user.user_id,
         action="USER_REGISTERED",
@@ -59,7 +71,8 @@ def register_user(data: RegisterRequest, db: Session = Depends(get_db)):
     )
 
     return {
-        "message": "User registered",
+        "message": "User registered successfully",
+        "user_id": str(user.user_id),
         "role": role
     }
 
@@ -78,6 +91,7 @@ def login_user(data: LoginRequest, db: Session = Depends(get_db)):
 
     return {
         "message": "Login successful",
+        "user_id": str(user.user_id),
         "role": user.role,
         "bank_id": str(user.bank_id) if user.bank_id else None
     }
