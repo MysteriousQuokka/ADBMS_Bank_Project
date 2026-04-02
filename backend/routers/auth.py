@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from backend.schemas.user_schema import RegisterRequest, LoginRequest
 from backend.database import SessionLocal
@@ -25,24 +25,28 @@ def register_user(data: RegisterRequest, db: Session = Depends(get_db)):
 
     # ✅ Role validation
     if role not in ["CENTRAL_ADMIN", "BANK_ADMIN", "AUDITOR"]:
-        return {"error": "Invalid role"}
+        # return {"error": "Invalid role"}
+        raise HTTPException(status_code=400, detail="Invalid role")
 
     # ✅ Duplicate user check
     existing_user = db.query(User).filter(User.email == data.email).first()
     if existing_user:
-        return {"error": "User already exists"}
+        # return {"error": "User already exists"}
+        raise HTTPException(status_code=400, detail="User already exists")
 
     bank = None
 
     # ✅ BANK_ADMIN must create bank
     if role == "BANK_ADMIN":
         if not data.bank_name:
-            return {"error": "Bank name required for BANK_ADMIN"}
+            # return {"error": "Bank name required for BANK_ADMIN"}
+            raise HTTPException(status_code=400, detail="Bank name required for BANK_ADMIN")
 
         # Optional: prevent duplicate banks
         existing_bank = db.query(Bank).filter(Bank.bank_name == data.bank_name).first()
         if existing_bank:
-            return {"error": "Bank already exists"}
+            # return {"error": "Bank already exists"}
+            raise HTTPException(status_code=400, detail="Bank already exists")
 
         bank = Bank(bank_name=data.bank_name)
         db.add(bank)
