@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-
+from fastapi.middleware.cors import CORSMiddleware
 from backend.database import Base, engine
 
 from backend.routers import auth
@@ -17,6 +17,13 @@ from backend.models import audit_log_model
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="Federated Fraud Detection API")
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # or your frontend URL
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 app.include_router(audit.router)
 app.include_router(auth.router)
 app.include_router(training.router)
