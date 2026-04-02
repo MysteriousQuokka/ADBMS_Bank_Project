@@ -2,42 +2,52 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import API from "../services/api";
 
-function Login() {
+function Register() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [role, setRole] = useState("");
+  const [bankName, setBankName] = useState("");
+
   const navigate = useNavigate();
 
-  const handleLogin = async () => {
+  const handleRegister = async () => {
     try {
-      const res = await API.post("/auth/login", {
+      await API.post("/auth/register", {
         email,
-        password
+        password,
+        role,
+        bank_name: role === "BANK_ADMIN" ? bankName : null
       });
 
-      const { role } = res.data;
-
-      localStorage.setItem("user", JSON.stringify(res.data));
-
-      if (role === "BANK_ADMIN") navigate("/bank");
-      if (role === "CENTRAL_ADMIN") navigate("/admin");
-      if (role === "AUDITOR") navigate("/auditor");
+      alert("Registered successfully. Please login.");
+      navigate("/");
 
     } catch (err) {
-      alert("Login failed");
+      alert("User already exists or error occurred");
     }
   };
 
   return (
     <div>
-      <h2>Login</h2>
+      <h2>Register</h2>
 
       <input placeholder="Email" onChange={e => setEmail(e.target.value)} />
       <input placeholder="Password" type="password" onChange={e => setPassword(e.target.value)} />
 
-      <button onClick={handleLogin}>Login</button>
-      <button onClick={() => navigate("/register")}>Register</button>
+      <select onChange={e => setRole(e.target.value)}>
+        <option>Select Role</option>
+        <option value="BANK_ADMIN">Bank Admin</option>
+        <option value="CENTRAL_ADMIN">Central Admin</option>
+        <option value="AUDITOR">Auditor</option>
+      </select>
+
+      {role === "BANK_ADMIN" && (
+        <input placeholder="Bank Name" onChange={e => setBankName(e.target.value)} />
+      )}
+
+      <button onClick={handleRegister}>Register</button>
     </div>
   );
 }
 
-export default Login;
+export default Register;
