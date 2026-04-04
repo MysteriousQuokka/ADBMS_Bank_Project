@@ -21,7 +21,7 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "http://localhost:5173",
-        "https://adbms-bank-project-hq5g.vercel.app/"  # add later when deployed
+        "https://adbms-bank-project-hq5g.vercel.app"  # add later when deployed
     ],
     allow_credentials=True,
     allow_methods=["*"],
