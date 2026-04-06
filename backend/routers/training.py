@@ -67,8 +67,8 @@ def upload_model(file: UploadFile = File(...), db: Session = Depends(get_db)):
     local_path = f"temp_{file_id}.pkl"
 
     # save locally
-    with open(local_path, "wb") as buffer:
-        shutil.copyfileobj(file.file, buffer)
+    # with open(local_path, "wb") as buffer:
+    #     shutil.copyfileobj(file.file, buffer)
 
     # upload to S3
     s3_key = f"bank_updates/{file_id}.pkl"
