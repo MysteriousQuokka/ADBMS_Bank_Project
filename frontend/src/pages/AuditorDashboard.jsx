@@ -32,7 +32,7 @@ function AuditorDashboard() {
   const fetchLogs = async () => {
     setLoading(true);
     try {
-      const res = await API.get("/audit");
+      const res = await API.get("/audit/logs");
       setLogs(res.data);
     } catch (err) {
       console.error("Error fetching logs", err);
