@@ -72,7 +72,7 @@ def get_latest_model(db: Session = Depends(get_db)):
     return lm_query
 
 @router.get("/fetch-model")
-def get_latest_model(db: Session = Depends(get_db)):
+def fetch_latest_model(db: Session = Depends(get_db)):
 
     # round = db.query(TrainingRound)\
     #     .filter(TrainingRound.status == "IN_PROGRESS")\
