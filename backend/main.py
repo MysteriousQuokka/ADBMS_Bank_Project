@@ -19,14 +19,16 @@ Base.metadata.create_all(bind=engine)
 app = FastAPI(title="Federated Fraud Detection API")
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:5173",
-        "https://adbms-bank-project-hq5g.vercel.app"  # add later when deployed
-    ],
+    allow_origins=["*"],  # TEMP DEBUG
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+    # allow_origins=[
+    #     "http://localhost:5173",
+    #     "https://adbms-bank-project-hq5g.vercel.app"  # add later when deployed
+    # ],
+    
 app.include_router(audit.router)
 app.include_router(auth.router)
 # app.include_router(training.router)
