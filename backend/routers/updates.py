@@ -86,12 +86,13 @@ def get_latest_model(db: Session = Depends(get_db)):
     #     "model_path": "s3://federated-fraud-models/global_models/model_v1.pkl"
     # }
     try:
-        lm1_query = db.query(Bank.update_s3_path).all()
+        
         s3 = boto3.client("s3",
         aws_access_key_id=os.getenv("AWS_ACCESS_KEY_ID"),
         aws_secret_access_key=os.getenv("AWS_SECRET_ACCESS_KEY"),
         region_name=os.getenv("AWS_DEFAULT_REGION")
        )
+        lm1_query = db.query(Bank.update_s3_path).all()
         if(len(lm1_query) == 0):
             return {"error": "No latest models found"}
 
