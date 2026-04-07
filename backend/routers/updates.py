@@ -3,6 +3,7 @@ from sqlalchemy.orm import Session
 from backend.services.audit_service import log_action
 from backend.database import SessionLocal
 # from backend.models.model_update_model import ModelUpdate
+from backend.models.bank_model1 import Bank
 from backend.models.training_round_model1 import TrainingRound
 
 router = APIRouter(prefix="/updates", tags=["Updates"])
@@ -29,7 +30,20 @@ def get_latest_model(db: Session = Depends(get_db)):
     #     "round_id": str(round.round_id),
     #     "model_path": "s3://federated-fraud-models/global_models/model_v1.pkl"
     # }
-    return db.query().order_by(AuditLog.created_at.desc()).all()
+    lm_query = db.query(
+    Bank.bank_name,
+    Bank.total_rows,
+    Bank.accuracy,
+    Bank.update_s3_path
+    ).all()
+    log_action(
+    actor_id=None,
+    action="LATEST_MODELS_FETCHED",
+    entity_type="MODEL_UPDATE",
+    entity_id=None,
+    details=f"Latest model fetched"
+    )
+    return lm_query
 
 @router.post("/")
 def submit_update(
