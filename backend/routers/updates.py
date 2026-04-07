@@ -14,12 +14,10 @@ from zoneinfo import ZoneInfo
 
 BUCKET_NAME = os.getenv("S3_BUCKET_NAME")
 
-def federated_average(models):
+def federated_average(models, bank_rows):
     agg_model = {}
-
     for key in models[0].keys():
-        agg_model[key] = np.mean([m[key] for m in models], axis=0)
-
+        agg_model[key] = np.average([m[key] for m in models], weights = bank_rows, axis=0)
     return agg_model
 
 models = []
@@ -86,7 +84,6 @@ def fetch_latest_model(db: Session = Depends(get_db)):
     #     "model_path": "s3://federated-fraud-models/global_models/model_v1.pkl"
     # }
     try:
-        
         s3 = boto3.client("s3",
         aws_access_key_id=os.getenv("AWS_ACCESS_KEY_ID"),
         aws_secret_access_key=os.getenv("AWS_SECRET_ACCESS_KEY"),
@@ -177,8 +174,9 @@ def submit_update(
     # return {"message": "Update received"}
     round_number = db.query(TrainingRound.round_number).order_by(TrainingRound.round_number.desc()).first()
     total_banks = db.query(Bank).count()
+    bank_rows = db.query(Bank.total_rows).all()
     # aggregate
-    aggregated_model = federated_average(models)
+    aggregated_model = federated_average(models, bank_rows)
     # get next round
     latest_round = db.query(TrainingRound).order_by(
         TrainingRound.round_number.desc()
@@ -208,5 +206,6 @@ def submit_update(
     )
     return {
         "round": next_round,
-        "aggregated_model_path": aggregated_model_path
+        "aggregated_model_path": aggregated_model_path,
+        "updated_weights": aggregated_model
     }
