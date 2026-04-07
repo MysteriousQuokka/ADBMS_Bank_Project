@@ -2,8 +2,8 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from backend.services.audit_service import log_action
 from backend.database import SessionLocal
-from backend.models.model_update_model import ModelUpdate
-from backend.models.training_round_model import TrainingRound
+# from backend.models.model_update_model import ModelUpdate
+from backend.models.training_round_model1 import TrainingRound
 
 router = APIRouter(prefix="/updates", tags=["Updates"])
 
@@ -15,6 +15,21 @@ def get_db():
     finally:
         db.close()
 
+@router.get("/latest-model")
+def get_latest_model(db: Session = Depends(get_db)):
+
+    # round = db.query(TrainingRound)\
+    #     .filter(TrainingRound.status == "IN_PROGRESS")\
+    #     .first()
+
+    # if not round:
+    #     return {"error": "No active training round"}
+
+    # return {
+    #     "round_id": str(round.round_id),
+    #     "model_path": "s3://federated-fraud-models/global_models/model_v1.pkl"
+    # }
+    return db.query().order_by(AuditLog.created_at.desc()).all()
 
 @router.post("/")
 def submit_update(
