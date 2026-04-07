@@ -49,12 +49,24 @@ function AdminDashboard() {
   const fetchUpdates = async () => {
     setLoading(true);
     try {
-      const res = await API.get("/updates");
-      setUpdates(res.data);
+      const res = await API.get("/updates/latest-model");
+
+      // Transform tuple → object
+      const formatted = res.data.map((item, index) => ({
+        id: index,
+        bank_name: item[0],
+        total_rows: item[1],
+        accuracy: item[2],
+        s3_path: item[3],
+        status: "available"
+      }));
+
+      setUpdates(formatted);
+
     } catch (err) {
-      console.error(err);
+        console.error(err);
     } finally {
-      setLoading(false);
+        setLoading(false);
     }
   };
 
