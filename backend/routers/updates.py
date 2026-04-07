@@ -92,8 +92,8 @@ def fetch_latest_model(db: Session = Depends(get_db)):
         for row in lm1_query:
             s3_path = row.update_s3_path
             bucket, key = s3_path.replace("s3://", "").split("/", 1)
-            obj = s3.get_object(Bucket=bucket, Key=key)
             try:
+                obj = s3.get_object(Bucket=bucket, Key=key)
                 model = pickle.loads(obj["Body"].read())
                 models.append(model)
             except Exception as e:
@@ -170,7 +170,10 @@ def submit_update(
     # return {"message": "Update received"}
     round_number = db.query(TrainingRound.round_number).order_by(TrainingRound.round_number.desc()).first()
     total_banks = db.query(Bank).count()
-    bank_rows = db.query(Bank.total_rows).all()
+    # bank_rows = db.query(Bank.total_rows).all()
+    bank_rows = [row[0] for row in bank_rows]
+    if len(models) == 0:
+        return {"error": "No models available for aggregation"}
     # aggregate
     aggregated_model = federated_average(models, bank_rows)
     # get next round
