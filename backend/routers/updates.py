@@ -39,35 +39,31 @@ def get_db():
     finally:
         db.close()
 
-
 @router.get("/latest-model")
 def get_latest_model(db: Session = Depends(get_db)):
+    try:
+        lm_query = db.query(
+            Bank.bank_name,
+            Bank.total_rows,
+            Bank.accuracy,
+            Bank.update_s3_path
+        ).all()
+        print("DEBUG DATA:", lm_query)
 
-    # round = db.query(TrainingRound)\
-    #     .filter(TrainingRound.status == "IN_PROGRESS")\
-    #     .first()
+        log_action(
+        actor_id=None,
+        action="LATEST_MODEL_DETAILS_FETCHED",
+        entity_type="MODEL_UPDATE",
+        entity_id=None,
+        details=f"Latest model details fetched at {datetime.now(ZoneInfo('Asia/Kolkata'))}"
+        )
+        return lm_query
 
-    # if not round:
-    #     return {"error": "No active training round"}
-
-    # return {
-    #     "round_id": str(round.round_id),
-    #     "model_path": "s3://federated-fraud-models/global_models/model_v1.pkl"
-    # }
-    lm_query = db.query(
-    Bank.bank_name,
-    Bank.total_rows,
-    Bank.accuracy,
-    Bank.update_s3_path
-    ).all()
-    log_action(
-    actor_id=None,
-    action="LATEST_MODEL_DETAILS_FETCHED",
-    entity_type="MODEL_UPDATE",
-    entity_id=None,
-    details=f"Latest model details fetched at {datetime.now(ZoneInfo('Asia/Kolkata'))}"
-    )
-    return lm_query
+    except Exception as e:
+        return {
+            "error": str(e),
+            "message": "Backend failed but handled safely"
+        }
 
 @router.get("/fetch-model")
 def fetch_latest_model(db: Session = Depends(get_db)):
