@@ -48,7 +48,7 @@ def get_latest_model(db: Session = Depends(get_db)):
             Bank.accuracy,
             Bank.update_s3_path
         ).all()
-        print("DEBUG DATA:", lm_query)
+        # print("DEBUG DATA:", lm_query)
 
         log_action(
         actor_id=None,
