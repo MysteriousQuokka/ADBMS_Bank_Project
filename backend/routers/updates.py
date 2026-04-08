@@ -172,7 +172,7 @@ def submit_update(
     total_banks = db.query(Bank).count()
     # bank_rows = db.query(Bank.total_rows).all()
     bank_rows = [row[0] for row in bank_rows]
-    if len(models) == 0:
+    if models == []:
         return {"error": "No models available for aggregation"}
     # aggregate
     aggregated_model = federated_average(models, bank_rows)
