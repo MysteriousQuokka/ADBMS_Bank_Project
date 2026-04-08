@@ -168,12 +168,12 @@ def submit_update(
     #     db.commit()
 
     # return {"message": "Update received"}
+    if models == []:
+        return {"error": "No models available for aggregation"}
     round_number = db.query(TrainingRound.round_number).order_by(TrainingRound.round_number.desc()).first()
     total_banks = db.query(Bank).count()
     # bank_rows = db.query(Bank.total_rows).all()
     bank_rows = [row[0] for row in bank_rows]
-    if models == []:
-        return {"error": "No models available for aggregation"}
     # aggregate
     aggregated_model = federated_average(models, bank_rows)
     # get next round
