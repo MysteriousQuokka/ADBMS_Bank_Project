@@ -98,12 +98,12 @@ def fetch_latest_model(db: Session = Depends(get_db)):
         lm1_query = db.query(Bank.update_s3_path).all()
         if(len(lm1_query) == 0):
             return {"error": "No latest models found"}
-
+        BUCKET_NAME = os.getenv("S3_BUCKET_NAME")
         for row in lm1_query:
             s3_path = row.update_s3_path
-            bucket, key = s3_path.replace("s3://", "").split("/", 1)
+            # bucket, key = s3_path.replace("s3://", "").split("/", 1)
             try:
-                obj = s3.get_object(Bucket=bucket, Key=key)
+                obj = s3.get_object(Bucket=BUCKET_NAME, Key=key)
                 model = pickle.loads(obj["Body"].read())
                 models.append(model)
             except Exception as e:
