@@ -14,7 +14,10 @@ import argparse
 from dotenv import load_dotenv
 from sqlalchemy import create_engine, desc
 from sqlalchemy.orm import sessionmaker
-
+from bank_model1 import Bank
+from audit_log_model import AuditLog
+from user_model import User
+from training_round_model1 import TrainingRound
 from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import accuracy_score
 
@@ -26,10 +29,10 @@ load_dotenv()
 
 AWS_ACCESS_KEY = os.getenv("AWS_ACCESS_KEY_ID")
 AWS_SECRET_KEY = os.getenv("AWS_SECRET_ACCESS_KEY")
-AWS_REGION = os.getenv("AWS_REGION")
+AWS_REGION = os.getenv("AWS_DEFAULT_REGION")
 BUCKET_NAME = os.getenv("S3_BUCKET_NAME")
 
-DATABASE_URL = os.getenv("NEON_DB_URL")
+DATABASE_URL = os.getenv("DATABASE_URL")
 
 
 # ==============================
