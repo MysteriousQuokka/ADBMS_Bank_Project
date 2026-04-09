@@ -104,8 +104,12 @@ def fetch_latest_model(db: Session = Depends(get_db)):
             # bucket, key = s3_path.replace("s3://", "").split("/", 1)
             try:
                 obj = s3.get_object(Bucket=BUCKET_NAME, Key=s3_path)
-                model = pickle.loads(obj["Body"].read())
-                models.append(model)
+                weights = pickle.loads(obj["Body"].read())
+
+                # Optional but smart: convert tensors → numpy
+                weights = {k: v.cpu().numpy() for k, v in weights.items()}
+
+                models.append(weights)
             except Exception as e:
                 print(f"Failed to load {s3_path}: {e}")
         log_action(
