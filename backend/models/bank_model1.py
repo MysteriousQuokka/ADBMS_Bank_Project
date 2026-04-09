@@ -13,7 +13,7 @@ class Bank(Base):
     bank_name = Column(String, nullable=False)
     # contact_email = Column(String)
     total_rows = Column(Integer)
-    accuracy = Column(ARRAY(Float))
+    accuracy = Column(Float)
     update_s3_path = Column(String)
     status = Column(String, default="ACTIVE")
     created_at = Column(TIMESTAMP, server_default=func.now())
