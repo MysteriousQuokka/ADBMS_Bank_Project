@@ -103,7 +103,7 @@ def fetch_latest_model(db: Session = Depends(get_db)):
             s3_path = row.update_s3_path
             # bucket, key = s3_path.replace("s3://", "").split("/", 1)
             try:
-                obj = s3.get_object(Bucket=BUCKET_NAME, Key=key)
+                obj = s3.get_object(Bucket=BUCKET_NAME, Key=s3_path)
                 model = pickle.loads(obj["Body"].read())
                 models.append(model)
             except Exception as e:
