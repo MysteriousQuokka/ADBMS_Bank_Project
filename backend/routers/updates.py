@@ -42,12 +42,12 @@ def get_db():
 @router.get("/latest-model")
 def get_latest_model(db: Session = Depends(get_db)):
     try:
-        lm_query = db.query(
-            Bank.bank_name,
-            Bank.total_rows,
-            Bank.accuracy,
-            Bank.update_s3_path
-        ).all()
+        # lm_query = db.query(
+        #     Bank.bank_name,
+        #     Bank.total_rows,
+        #     Bank.accuracy,
+        #     Bank.update_s3_path
+        # ).all()
         # print("DEBUG DATA:", lm_query)
 
         log_action(
@@ -57,7 +57,16 @@ def get_latest_model(db: Session = Depends(get_db)):
         entity_id=None,
         details=f"Latest model details fetched at {datetime.now(ZoneInfo('Asia/Kolkata'))}"
         )
-        return lm_query
+        # return lm_query
+        return [
+        {
+            "bank_name": b.bank_name,
+            "total_rows": b.total_rows,
+            "accuracy": b.accuracy,
+            "update_s3_path": b.update_s3_path
+        }
+        for b in db.query(Bank).all()
+        ]
 
     except Exception as e:
         return {
