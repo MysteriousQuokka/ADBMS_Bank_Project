@@ -111,8 +111,8 @@ def fetch_global_model(db):
 def train_local_model(csv_path, initial_weights=None):
     df = pd.read_csv(csv_path)
 
-    X = df.drop(columns=["label"]).values
-    y = df["label"].values
+    X = df.drop(columns=["isFraud"]).values
+    y = df["isFraud"].values
 
     scaler = StandardScaler()
     X = scaler.fit_transform(X)

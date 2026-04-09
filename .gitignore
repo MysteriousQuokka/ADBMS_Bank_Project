@@ -23,6 +23,7 @@ Thumbs.db
 # Database backups
 *.sql
 *.db
+*.csv
 
 # Secrets
 .aws/
