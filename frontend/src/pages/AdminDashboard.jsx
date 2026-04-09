@@ -1,14 +1,6 @@
 // src/pages/AdminDashboard.jsx
 import { useEffect, useState } from "react";
-import {
-  CheckCircle,
-  XCircle,
-  Clock,
-  TrendingUp,
-  Zap,
-  Users,
-  RefreshCw,
-} from "lucide-react";
+import { TrendingUp, Zap, Users, RefreshCw } from "lucide-react";
 import {
   LineChart,
   Line,
@@ -39,30 +31,6 @@ const cardTop = (color = "rgba(59,158,255,0.3)") => ({
   background: `linear-gradient(90deg,transparent,${color},transparent)`,
 });
 
-const accuracyData = [
-  { round: "R20", fed: 94.2, bankA: 91.0, bankB: 88.1 },
-  { round: "R22", fed: 95.1, bankA: 91.5, bankB: 88.9 },
-  { round: "R24", fed: 96.2, bankA: 92.2, bankB: 89.8 },
-  { round: "R26", fed: 97.1, bankA: 93.0, bankB: 91.0 },
-  { round: "R27", fed: 97.2, bankA: 93.5, bankB: 91.5 },
-  { round: "R28", fed: 97.8, bankA: 94.4, bankB: 92.1 },
-];
-
-const btnStyle = {
-  padding: "9px 16px",
-  borderRadius: "var(--radius)",
-  border: "1px solid var(--border)",
-  background: "var(--bg3)",
-  color: "var(--text)",
-  fontSize: 12,
-  fontFamily: "var(--mono)",
-  letterSpacing: 0.5,
-  cursor: "pointer",
-  position: "relative",
-  overflow: "hidden",
-  transition: "all 0.25s ease",
-};
-
 const CustomTooltip = ({ active, payload, label }) => {
   if (!active || !payload?.length) return null;
   return (
@@ -89,24 +57,21 @@ const CustomTooltip = ({ active, payload, label }) => {
 function AdminDashboard() {
   const [updates, setUpdates] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [actionId, setActionId] = useState(null);
   const [actionLoading, setActionLoading] = useState(null);
 
   const fetchUpdates = async () => {
     setLoading(true);
     try {
       const res = await API.get("/updates/latest-model");
-      console.log("Update RESPONSE:", res.data);
-      // Transform tuple → object
+      // Replace the fetchUpdates function body inside try block
       const formatted = res.data.map((item, index) => ({
         id: index,
-        bank_name: item[0],
-        total_rows: item[1],
-        accuracy: item[2],
-        s3_path: item[3],
-        status: "available",
+        bank_name: item.bank_name,
+        total_rows: item.total_rows,
+        accuracy: Array.isArray(item.accuracy) ? item.accuracy : [],
+        s3_path: item.update_s3_path,
       }));
-
+      console.log("Update RESPONSE:", res.data);
       setUpdates(formatted);
     } catch (err) {
       console.error(err);
@@ -151,81 +116,6 @@ function AdminDashboard() {
     }
   };
 
-  const handleApprove = async (id) => {
-    setActionId(id);
-    try {
-      await API.post(`/updates/${id}/approve`);
-      setUpdates((prev) =>
-        prev.map((u) => (u.id === id ? { ...u, status: "approved" } : u)),
-      );
-    } catch (err) {
-      alert(err.response?.data?.detail || "Approval failed");
-    } finally {
-      setActionId(null);
-    }
-  };
-
-  const handleReject = async (id) => {
-    setActionId(id);
-    try {
-      await API.post(`/updates/${id}/reject`);
-      setUpdates((prev) =>
-        prev.map((u) => (u.id === id ? { ...u, status: "rejected" } : u)),
-      );
-    } catch (err) {
-      alert(err.response?.data?.detail || "Rejection failed");
-    } finally {
-      setActionId(null);
-    }
-  };
-
-  const pending = updates.filter(
-    (u) => !u.status || u.status === "pending",
-  ).length;
-  const approved = updates.filter((u) => u.status === "approved").length;
-  const rejected = updates.filter((u) => u.status === "rejected").length;
-
-  const statusPill = (status) => {
-    const map = {
-      approved: {
-        color: "var(--accent2)",
-        bg: "rgba(0,229,160,0.1)",
-        border: "rgba(0,229,160,0.3)",
-        label: "Approved",
-      },
-      rejected: {
-        color: "var(--danger)",
-        bg: "rgba(255,68,102,0.1)",
-        border: "rgba(255,68,102,0.3)",
-        label: "Rejected",
-      },
-      pending: {
-        color: "var(--warn)",
-        bg: "rgba(255,170,0,0.1)",
-        border: "rgba(255,170,0,0.3)",
-        label: "Pending",
-      },
-    };
-    const s = map[status] || map.pending;
-    return (
-      <span
-        style={{
-          padding: "3px 10px",
-          borderRadius: 20,
-          fontSize: 10,
-          fontWeight: 600,
-          textTransform: "uppercase",
-          background: s.bg,
-          color: s.color,
-          border: `1px solid ${s.border}`,
-          fontFamily: "var(--mono)",
-        }}
-      >
-        {s.label}
-      </span>
-    );
-  };
-
   return (
     <div style={{ minHeight: "100vh" }}>
       <Navbar />
@@ -256,24 +146,6 @@ function AdminDashboard() {
               Approve model updates · Manage global model · Monitor federation
             </div>
           </div>
-          <button
-            onClick={fetchUpdates}
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 6,
-              padding: "8px 16px",
-              borderRadius: "var(--radius)",
-              border: "1px solid var(--border2)",
-              background: "transparent",
-              color: "var(--text2)",
-              fontSize: 12,
-              fontFamily: "var(--mono)",
-              cursor: "pointer",
-            }}
-          >
-            <RefreshCw size={13} /> Refresh
-          </button>
         </div>
 
         {/* Stats + Action Cards */}
@@ -462,8 +334,8 @@ function AdminDashboard() {
             marginBottom: 20,
           }}
         >
-          {/* Updates Table */}
-          <div style={{ ...card }} className="fade-up-1">
+          {/* ── Updates Table ── */}
+          <div style={{ ...card, marginBottom: 20 }} className="fade-up-1">
             <div style={cardTop()} />
             <div
               style={{
@@ -481,23 +353,8 @@ function AdminDashboard() {
                   fontSize: 14,
                 }}
               >
-                Model Update Approvals
+                Bank Model Updates
               </span>
-              {pending > 0 && (
-                <span
-                  style={{
-                    marginLeft: "auto",
-                    background: "var(--danger)",
-                    color: "#fff",
-                    fontSize: 10,
-                    padding: "2px 8px",
-                    borderRadius: 20,
-                    fontFamily: "var(--mono)",
-                  }}
-                >
-                  {pending} pending
-                </span>
-              )}
             </div>
 
             {loading ? (
@@ -536,205 +393,271 @@ function AdminDashboard() {
                 No updates found
               </div>
             ) : (
-              <div
-                style={{ display: "flex", flexDirection: "column", gap: 10 }}
-              >
-                {updates.map((u) => (
-                  <div
-                    key={u.id}
-                    style={{
-                      padding: "14px 16px",
-                      borderRadius: "var(--radius)",
-                      background: "var(--bg3)",
-                      border: "1px solid var(--border)",
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 14,
-                    }}
-                  >
-                    <div style={{ flex: 1 }}>
-                      <div
-                        style={{
-                          fontFamily: "var(--mono)",
-                          fontSize: 13,
-                          fontWeight: 600,
-                          color: "var(--text)",
-                        }}
-                      >
-                        {u.version || `Update #${u.id}`}
-                      </div>
-                      <div
-                        style={{
-                          fontSize: 11,
-                          color: "var(--text2)",
-                          marginTop: 3,
-                        }}
-                      >
-                        {u.bank_name || u.bank_id || "Bank"} ·{" "}
-                        {u.created_at
-                          ? new Date(u.created_at).toLocaleString()
-                          : "—"}
-                      </div>
-                    </div>
-                    {statusPill(u.status || "pending")}
-                    {(!u.status || u.status === "pending") && (
-                      <div style={{ display: "flex", gap: 8 }}>
-                        <button
-                          onClick={() => handleApprove(u.id)}
-                          disabled={actionId === u.id}
+              <div style={{ overflowX: "auto" }}>
+                <table
+                  style={{
+                    width: "100%",
+                    borderCollapse: "collapse",
+                    fontFamily: "var(--mono)",
+                    fontSize: 12,
+                  }}
+                >
+                  <thead>
+                    <tr>
+                      {[
+                        "Bank Name",
+                        "Total Rows",
+                        "Latest Accuracy",
+                        "S3 Path",
+                      ].map((h) => (
+                        <th
+                          key={h}
                           style={{
-                            padding: "6px 14px",
-                            borderRadius: 6,
-                            border: "1px solid rgba(0,229,160,0.4)",
-                            background: "rgba(0,229,160,0.08)",
-                            color: "var(--accent2)",
-                            fontSize: 11,
-                            fontFamily: "var(--mono)",
-                            fontWeight: 600,
-                            cursor: "pointer",
+                            textAlign: "left",
+                            padding: "10px 14px",
+                            color: "var(--text3)",
+                            fontSize: 10,
+                            textTransform: "uppercase",
+                            letterSpacing: 1.2,
+                            borderBottom: "1px solid var(--border)",
+                            whiteSpace: "nowrap",
                           }}
                         >
-                          Approve
-                        </button>
-                        <button
-                          onClick={() => handleReject(u.id)}
-                          disabled={actionId === u.id}
+                          {h}
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {updates.map((u, i) => {
+                      const latestAcc =
+                        Array.isArray(u.accuracy) && u.accuracy.length > 0
+                          ? u.accuracy[u.accuracy.length - 1]
+                          : null;
+                      return (
+                        <tr
+                          key={u.id}
                           style={{
-                            padding: "6px 14px",
-                            borderRadius: 6,
-                            border: "1px solid rgba(255,68,102,0.3)",
-                            background: "rgba(255,68,102,0.06)",
-                            color: "var(--danger)",
-                            fontSize: 11,
-                            fontFamily: "var(--mono)",
-                            fontWeight: 600,
-                            cursor: "pointer",
+                            borderBottom: "1px solid var(--border)",
+                            transition: "background 0.15s",
                           }}
+                          onMouseEnter={(e) =>
+                            (e.currentTarget.style.background = "var(--bg3)")
+                          }
+                          onMouseLeave={(e) =>
+                            (e.currentTarget.style.background = "transparent")
+                          }
                         >
-                          Reject
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                ))}
+                          <td
+                            style={{
+                              padding: "12px 14px",
+                              color: "var(--accent)",
+                              fontWeight: 600,
+                            }}
+                          >
+                            {u.bank_name || "—"}
+                          </td>
+                          <td
+                            style={{
+                              padding: "12px 14px",
+                              color: "var(--text)",
+                            }}
+                          >
+                            {u.total_rows != null
+                              ? u.total_rows.toLocaleString()
+                              : "—"}
+                          </td>
+                          <td style={{ padding: "12px 14px" }}>
+                            {latestAcc != null ? (
+                              <span
+                                style={{
+                                  color:
+                                    latestAcc >= 90
+                                      ? "var(--accent2)"
+                                      : latestAcc >= 75
+                                        ? "var(--warn)"
+                                        : "var(--danger)",
+                                  fontWeight: 700,
+                                }}
+                              >
+                                {(latestAcc * 100).toFixed(2)}%
+                              </span>
+                            ) : (
+                              "—"
+                            )}
+                          </td>
+                          <td
+                            style={{
+                              padding: "12px 14px",
+                              color: "var(--text2)",
+                              maxWidth: 200,
+                              overflow: "hidden",
+                              textOverflow: "ellipsis",
+                              whiteSpace: "nowrap",
+                            }}
+                          >
+                            <span title={u.s3_path}>{u.s3_path || "—"}</span>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
               </div>
             )}
           </div>
 
-          {/* Accuracy Chart */}
-          <div style={{ ...card }} className="fade-up-2">
-            <div style={cardTop("rgba(0,229,160,0.3)")} />
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 10,
-                marginBottom: 20,
-              }}
-            >
-              <TrendingUp size={18} color="var(--accent2)" />
-              <span
+          {/* ── Accuracy Chart (multi-bank from real data) ── */}
+          {updates.some(
+            (u) => Array.isArray(u.accuracy) && u.accuracy.length > 0,
+          ) && (
+            <div style={{ ...card, marginBottom: 20 }} className="fade-up-2">
+              <div style={cardTop("rgba(0,229,160,0.3)")} />
+              <div
                 style={{
-                  fontFamily: "var(--mono)",
-                  fontWeight: 600,
-                  fontSize: 14,
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 10,
+                  marginBottom: 20,
                 }}
               >
-                Federated vs Single-Bank
-              </span>
-            </div>
-            <ResponsiveContainer width="100%" height={220}>
-              <LineChart data={accuracyData}>
-                <CartesianGrid
-                  strokeDasharray="3 3"
-                  stroke="rgba(26,40,64,0.8)"
-                />
-                <XAxis
-                  dataKey="round"
-                  tick={{
-                    fill: "var(--text2)",
-                    fontSize: 10,
-                    fontFamily: "var(--mono)",
-                  }}
-                  axisLine={{ stroke: "var(--border)" }}
-                  tickLine={false}
-                />
-                <YAxis
-                  domain={[87, 100]}
-                  tick={{
-                    fill: "var(--text2)",
-                    fontSize: 10,
-                    fontFamily: "var(--mono)",
-                  }}
-                  axisLine={false}
-                  tickLine={false}
-                />
-                <Tooltip content={<CustomTooltip />} />
-                <Line
-                  type="monotone"
-                  dataKey="fed"
-                  name="Global (Fed)"
-                  stroke="#3b9eff"
-                  strokeWidth={2.5}
-                  dot={{ fill: "#3b9eff", r: 3 }}
-                />
-                <Line
-                  type="monotone"
-                  dataKey="bankA"
-                  name="Bank Alpha"
-                  stroke="#00e5a0"
-                  strokeWidth={1.5}
-                  strokeDasharray="4 4"
-                  dot={false}
-                />
-                <Line
-                  type="monotone"
-                  dataKey="bankB"
-                  name="Bank Beta"
-                  stroke="#ffaa00"
-                  strokeWidth={1.5}
-                  strokeDasharray="4 4"
-                  dot={false}
-                />
-              </LineChart>
-            </ResponsiveContainer>
-            <div
-              style={{
-                display: "flex",
-                gap: 14,
-                marginTop: 12,
-                flexWrap: "wrap",
-              }}
-            >
-              {[
-                ["Global (Fed)", "#3b9eff"],
-                ["Bank Alpha", "#00e5a0"],
-                ["Bank Beta", "#ffaa00"],
-              ].map(([l, c]) => (
-                <div
-                  key={l}
+                <TrendingUp size={18} color="var(--accent2)" />
+                <span
                   style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 6,
-                    fontSize: 10,
                     fontFamily: "var(--mono)",
-                    color: "var(--text2)",
+                    fontWeight: 600,
+                    fontSize: 14,
                   }}
                 >
-                  <div
-                    style={{
-                      width: 12,
-                      height: 2,
-                      background: c,
-                      borderRadius: 1,
+                  Accuracy Progression · All Banks
+                </span>
+              </div>
+
+              <ResponsiveContainer width="100%" height={260}>
+                <LineChart
+                  data={(() => {
+                    const maxLen = Math.max(
+                      ...updates.map((u) => (u.accuracy || []).length),
+                    );
+                    return Array.from({ length: maxLen }, (_, i) => {
+                      const point = { round: `R${i + 1}` };
+                      updates.forEach((u) => {
+                        const acc = u.accuracy || [];
+                        // right-align: offset shorter arrays to the end
+                        const offset = maxLen - acc.length;
+                        if (i >= offset && acc[i - offset] != null) {
+                          point[u.bank_name] = parseFloat(
+                            (acc[i - offset] * 100).toFixed(2),
+                          );
+                        }
+                      });
+                      return point;
+                    });
+                  })()}
+                >
+                  <CartesianGrid
+                    strokeDasharray="3 3"
+                    stroke="rgba(26,40,64,0.8)"
+                  />
+                  <XAxis
+                    dataKey="round"
+                    tick={{
+                      fill: "var(--text2)",
+                      fontSize: 10,
+                      fontFamily: "var(--mono)",
                     }}
-                  />{" "}
-                  {l}
-                </div>
-              ))}
+                    axisLine={{ stroke: "var(--border)" }}
+                    tickLine={false}
+                  />
+                  <YAxis
+                    domain={[0, 100]}
+                    tick={{
+                      fill: "var(--text2)",
+                      fontSize: 10,
+                      fontFamily: "var(--mono)",
+                    }}
+                    axisLine={false}
+                    tickLine={false}
+                    tickFormatter={(v) => `${v}%`}
+                  />
+                  <Tooltip content={<CustomTooltip />} />
+                  {updates
+                    .filter(
+                      (u) => Array.isArray(u.accuracy) && u.accuracy.length > 0,
+                    )
+                    .map((u, i) => {
+                      const COLORS = [
+                        "#3b9eff",
+                        "#00e5a0",
+                        "#ffaa00",
+                        "#ff4466",
+                        "#a78bfa",
+                        "#f97316",
+                      ];
+                      return (
+                        <Line
+                          key={u.bank_name}
+                          type="monotone"
+                          dataKey={u.bank_name}
+                          stroke={COLORS[i % COLORS.length]}
+                          strokeWidth={2.5}
+                          dot={{ fill: COLORS[i % COLORS.length], r: 3 }}
+                          activeDot={{ r: 5 }}
+                        />
+                      );
+                    })}
+                </LineChart>
+              </ResponsiveContainer>
+
+              {/* Legend */}
+              <div
+                style={{
+                  display: "flex",
+                  gap: 16,
+                  marginTop: 14,
+                  flexWrap: "wrap",
+                }}
+              >
+                {updates
+                  .filter(
+                    (u) => Array.isArray(u.accuracy) && u.accuracy.length > 0,
+                  )
+                  .map((u, i) => {
+                    const COLORS = [
+                      "#3b9eff",
+                      "#00e5a0",
+                      "#ffaa00",
+                      "#ff4466",
+                      "#a78bfa",
+                      "#f97316",
+                    ];
+                    return (
+                      <div
+                        key={u.bank_name}
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 6,
+                          fontSize: 10,
+                          fontFamily: "var(--mono)",
+                          color: "var(--text2)",
+                        }}
+                      >
+                        <div
+                          style={{
+                            width: 12,
+                            height: 2,
+                            background: COLORS[i % COLORS.length],
+                            borderRadius: 1,
+                          }}
+                        />
+                        {u.bank_name}
+                      </div>
+                    );
+                  })}
+              </div>
             </div>
-          </div>
+          )}
         </div>
       </div>
     </div>
