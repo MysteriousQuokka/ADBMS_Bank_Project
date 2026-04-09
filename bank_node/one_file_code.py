@@ -186,7 +186,11 @@ def upload_and_log(db, bank, weights, accuracy, total_rows, actor_id):
     s3_key = f"models/{bank.bank_name}_{uuid.uuid4()}.pkl"
     upload_pickle_to_s3(weights, s3_key)
 
-    bank.accuracy = accuracy
+    # bank.accuracy = accuracy
+    if bank.accuracy:
+        bank.accuracy = bank.accuracy + [accuracy]
+    else:
+        bank.accuracy = [accuracy]
     bank.total_rows = total_rows
     bank.update_s3_path = s3_key
     bank.status = "PARTICIPATING"
