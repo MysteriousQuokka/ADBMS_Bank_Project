@@ -95,8 +95,8 @@ def fetch_latest_model(db: Session = Depends(get_db)):
         aws_secret_access_key=os.getenv("AWS_SECRET_ACCESS_KEY"),
         region_name=os.getenv("AWS_DEFAULT_REGION")
        )
-        return {"message": "S3 client initialized successfully"}
         lm1_query = db.query(Bank.update_s3_path).all()
+        return {"message": "S3 client initialized successfully"}
         if(len(lm1_query) == 0):
             return {"error": "No latest models found"}
         return lm1_query
