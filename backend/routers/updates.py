@@ -99,13 +99,17 @@ def fetch_latest_model(db: Session = Depends(get_db)):
         # if(lm1_query == []):
         #     return {"error": "No latest models found"}
         # paths = [row.update_s3_path for row in lm1_query]
-        banks = (
-            db.query(Bank)
-            .filter(Bank.update_s3_path.isnot(None))
-            .all()
-        )
+        # banks = (
+        #     db.query(Bank)
+        #     .filter(Bank.update_s3_path.isnot(None))
+        #     .all()
+        # )
 
-        paths = [bank.update_s3_path for bank in banks]
+        # paths = [bank.update_s3_path for bank in banks]
+        banks = db.query(Bank).all()
+
+# extract only valid s3 paths (skip NULL / empty)
+        paths = [bank.update_s3_path for bank in banks if bank.update_s3_path]
 
         if not paths:
             return {"error": "No latest models found"}
