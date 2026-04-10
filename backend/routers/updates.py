@@ -95,10 +95,20 @@ def fetch_latest_model(db: Session = Depends(get_db)):
         aws_secret_access_key=os.getenv("AWS_SECRET_ACCESS_KEY"),
         region_name=os.getenv("AWS_DEFAULT_REGION")
        )
-        lm1_query = db.query(Bank.update_s3_path).all()
-        if(lm1_query == []):
+        # lm1_query = db.query(Bank.update_s3_path).all()
+        # if(lm1_query == []):
+        #     return {"error": "No latest models found"}
+        # paths = [row.update_s3_path for row in lm1_query]
+        banks = (
+            db.query(Bank)
+            .filter(Bank.update_s3_path.isnot(None))
+            .all()
+        )
+
+        paths = [bank.update_s3_path for bank in banks]
+
+        if not paths:
             return {"error": "No latest models found"}
-        paths = [row.update_s3_path for row in lm1_query]
         BUCKET_NAME = os.getenv("S3_BUCKET_NAME")
         for row in paths:
             s3_path = row
