@@ -107,7 +107,7 @@ def fetch_latest_model(db: Session = Depends(get_db)):
 
         # paths = [bank.update_s3_path for bank in banks]
         banks = db.query(Bank).all()
-
+        return banks #to be commented out, just for debugging
 # extract only valid s3 paths (skip NULL / empty)
         paths = [bank.update_s3_path for bank in banks if bank.update_s3_path]
 
