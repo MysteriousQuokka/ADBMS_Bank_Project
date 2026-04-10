@@ -104,9 +104,9 @@ def fetch_latest_model(db: Session = Depends(get_db)):
             # bucket, key = s3_path.replace("s3://", "").split("/", 1)
             try:
                 obj = s3.get_object(Bucket=BUCKET_NAME, Key=s3_path)
-                print(obj)
+                # print(obj)
                 weights = pickle.loads(obj["Body"].read())
-                print(weights)
+                # print(weights)
                 # Optional but smart: convert tensors → numpy
                 weights = {k: v.cpu().numpy() for k, v in weights.items()}
 
