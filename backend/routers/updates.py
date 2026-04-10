@@ -98,6 +98,7 @@ def fetch_latest_model(db: Session = Depends(get_db)):
         lm1_query = db.query(Bank.update_s3_path).all()
         if(len(lm1_query) == 0):
             return {"error": "No latest models found"}
+        return lm1_query
         BUCKET_NAME = os.getenv("S3_BUCKET_NAME")
         for row in lm1_query:
             s3_path = row.update_s3_path
