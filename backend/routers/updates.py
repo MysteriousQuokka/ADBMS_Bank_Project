@@ -96,9 +96,8 @@ def fetch_latest_model(db: Session = Depends(get_db)):
         region_name=os.getenv("AWS_DEFAULT_REGION")
        )
         lm1_query = db.query(Bank.update_s3_path).all()
-        return {"message": "S3 client initialized successfully"}
-        if(len(lm1_query) == 0):
-            return {"error": "No latest models found"}
+        # if(len(lm1_query) == 0):
+        #     return {"error": "No latest models found"}
         return lm1_query
         BUCKET_NAME = os.getenv("S3_BUCKET_NAME")
         for row in lm1_query:
