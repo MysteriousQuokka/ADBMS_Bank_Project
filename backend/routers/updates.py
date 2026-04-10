@@ -104,8 +104,9 @@ def fetch_latest_model(db: Session = Depends(get_db)):
             # bucket, key = s3_path.replace("s3://", "").split("/", 1)
             try:
                 obj = s3.get_object(Bucket=BUCKET_NAME, Key=s3_path)
+                print(obj)
                 weights = pickle.loads(obj["Body"].read())
-
+                print(weights)
                 # Optional but smart: convert tensors → numpy
                 weights = {k: v.cpu().numpy() for k, v in weights.items()}
 
@@ -119,7 +120,7 @@ def fetch_latest_model(db: Session = Depends(get_db)):
         entity_id=None,
         details=f"Latest models fetched at {datetime.now(ZoneInfo('Asia/Kolkata'))}"
         )
-        return "Models fetched successfully",models
+        return "Models fetched successfully",models,lm1_query
     except Exception as e:
         log_action(
         actor_id=None,
