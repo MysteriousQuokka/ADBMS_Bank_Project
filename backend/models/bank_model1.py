@@ -4,7 +4,7 @@ from sqlalchemy.sql import func
 import uuid
 from sqlalchemy.dialects.postgresql import ARRAY
 
-from backend.database import Base
+from database import Base
 
 class Bank(Base):
     __tablename__ = "bank_details"

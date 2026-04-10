@@ -1,5 +1,5 @@
-from backend.database import SessionLocal
-from backend.models.audit_log_model import AuditLog
+from database import SessionLocal
+from models.audit_log_model import AuditLog
 
 
 def log_action(actor_id, action, entity_type, entity_id=None, details=None):
