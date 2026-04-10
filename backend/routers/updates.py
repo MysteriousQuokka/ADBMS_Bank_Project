@@ -120,7 +120,7 @@ def fetch_latest_model(db: Session = Depends(get_db)):
         entity_id=None,
         details=f"Latest models fetched at {datetime.now(ZoneInfo('Asia/Kolkata'))}"
         )
-        return "Models fetched successfully",models,lm1_query
+        return "Models fetched successfully",models
     except Exception as e:
         log_action(
         actor_id=None,
