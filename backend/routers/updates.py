@@ -14,13 +14,37 @@ from datetime import datetime
 from zoneinfo import ZoneInfo
 
 BUCKET_NAME = os.getenv("S3_BUCKET_NAME")
+AWS_ACCESS_KEY = os.getenv("AWS_ACCESS_KEY_ID")
+AWS_SECRET_KEY = os.getenv("AWS_SECRET_ACCESS_KEY")
+AWS_REGION = os.getenv("AWS_DEFAULT_REGION")
+
+s3 = boto3.client(
+    "s3",
+    aws_access_key_id=AWS_ACCESS_KEY,
+    aws_secret_access_key=AWS_SECRET_KEY,
+    region_name=AWS_REGION
+)
 
 def federated_average(models, bank_rows):
     agg_model = {}
-    for key in models[0].keys():
-        agg_model[key] = np.average([m[key] for m in models], weights = bank_rows, axis=0)
-    return agg_model
 
+    # Normalize weights (important, otherwise scaling issues)
+    weights = np.array(bank_rows, dtype=np.float64)
+    weights = weights / weights.sum()
+
+    for key in models[0].keys():
+        # Convert each model's layer to numpy
+        layer_stack = np.array([
+            np.array(m[key], dtype=np.float32) for m in models
+        ])
+
+        # Weighted average
+        agg_layer = np.tensordot(weights, layer_stack, axes=(0, 0))
+
+        # Convert back to list (for JSON / storage)
+        agg_model[key] = agg_layer.tolist()
+
+    return agg_model
 models = []
 
 def upload_model_to_s3(model, bucket, key):
@@ -69,16 +93,16 @@ def get_latest_model(db: Session = Depends(get_db)):
 def fetch_latest_model(db: Session = Depends(get_db)):
     try:
         models = []
-        s3 = boto3.client("s3",
-        aws_access_key_id=os.getenv("AWS_ACCESS_KEY_ID"),
-        aws_secret_access_key=os.getenv("AWS_SECRET_ACCESS_KEY"),
-        region_name=os.getenv("AWS_DEFAULT_REGION")
-       )
+    #     s3 = boto3.client("s3",
+    #     aws_access_key_id=os.getenv("AWS_ACCESS_KEY_ID"),
+    #     aws_secret_access_key=os.getenv("AWS_SECRET_ACCESS_KEY"),
+    #     region_name=os.getenv("AWS_DEFAULT_REGION")
+    #    )
         banks = db.query(Bank).all()
         paths = [bank.update_s3_path for bank in banks if bank.update_s3_path]
         if not paths:
             return {"error": "No latest models found"}
-        BUCKET_NAME = os.getenv("S3_BUCKET_NAME")
+        # BUCKET_NAME = os.getenv("S3_BUCKET_NAME")
         for row in paths:
             s3_path = row
             try:
@@ -111,15 +135,16 @@ def fetch_latest_model(db: Session = Depends(get_db)):
 
 @router.post("/submit-update")
 def submit_update(db: Session = Depends(get_db)):
+    message,models = fetch_latest_model(db)
     if models == []:
         return {"error": "No models available for aggregation"}
     round_number = db.query(TrainingRound.round_number).order_by(TrainingRound.round_number.desc()).first()
-    total_banks = db.query(Bank1).filter(Bank1.status == "PARTICIPATING").count()
-    bank_rows = db.query(Bank1.total_rows).filter(Bank1.status == "PARTICIPATING").all()
+    total_banks = db.query(Bank).filter(Bank.status == "PARTICIPATING").count()
+    bank_rows = db.query(Bank.total_rows).filter(Bank.status == "PARTICIPATING").all()
     bank_rows = [row[0] for row in bank_rows]
     # aggregate
     aggregated_model = federated_average(models, bank_rows)
-    return aggregated_model  #To be commented out after testing
+    # return aggregated_model  #To be commented out after testing
     # get next round
     latest_round = db.query(TrainingRound).order_by(TrainingRound.round_number.desc()).first()
     next_round = latest_round.round_number + 1 if latest_round else 1
@@ -138,7 +163,7 @@ def submit_update(db: Session = Depends(get_db)):
         actor_id=None,
         action="MODEL_AGGREGATED",
         entity_type="TRAINING_ROUND",
-        entity_id=new_round.round_number,
+        entity_id=None,
         details=f"Aggregated model for round {new_round.round_number} uploaded at {aggregated_model_path}"
     )
     return {
