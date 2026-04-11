@@ -4,7 +4,7 @@ from services.audit_service import log_action
 from database import SessionLocal
 from models.bank_model1 import Bank
 
-router = APIRouter(prefix="/updates", tags=["Updates"])
+router = APIRouter(prefix="/bank_details", tags=["Bank Details"])
 def get_db():
     db = SessionLocal()
     try:
@@ -12,8 +12,8 @@ def get_db():
     finally:
         db.close()
 
-@router.get("/latest-model")
-def get_latest_model(db: Session = Depends(get_db), bank_name: str = None):
+@router.get("/model-details")
+def get_model_details(db: Session = Depends(get_db), bank_name: str = None):
     try:
         log_action(
         actor_id=None,
