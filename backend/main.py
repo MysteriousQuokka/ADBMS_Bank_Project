@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from database import Base, engine
 
 from routers import auth
-# from routers import training
+from routers import bank_updates
 from routers import updates
 from routers import audit
 from models import bank_model1
@@ -31,7 +31,7 @@ app.add_middleware(
     
 app.include_router(audit.router)
 app.include_router(auth.router)
-# app.include_router(training.router)
+app.include_router(bank_updates.router)
 app.include_router(updates.router)
 
 
