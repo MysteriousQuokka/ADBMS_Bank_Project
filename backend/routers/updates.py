@@ -11,6 +11,7 @@ import pickle
 import numpy as np
 from datetime import datetime
 from zoneinfo import ZoneInfo
+import io
 
 BUCKET_NAME = os.getenv("S3_BUCKET_NAME")
 AWS_ACCESS_KEY = os.getenv("AWS_ACCESS_KEY_ID")
