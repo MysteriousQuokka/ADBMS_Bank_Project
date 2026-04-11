@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from backend.services.audit_service import log_action
 from backend.database import SessionLocal
 # from backend.models.model_update_model import ModelUpdate
-from backend.models.bank_model1 import Bank
+from backend.models.bank_model1 import Bank1
 from backend.models.training_round_model1 import TrainingRound
 import boto3
 import os

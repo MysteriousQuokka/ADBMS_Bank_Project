@@ -6,7 +6,7 @@ from sqlalchemy.dialects.postgresql import ARRAY
 
 from backend.database import Base
 
-class Bank(Base):
+class Bank1(Base):
     __tablename__ = "bank_details"
 
     bank_id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
