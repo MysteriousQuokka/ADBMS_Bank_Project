@@ -27,9 +27,7 @@ def upload_model_to_s3(model, bucket, key):
     buffer = io.BytesIO()
     pickle.dump(model, buffer)
     buffer.seek(0)
-
     s3.upload_fileobj(buffer, bucket, key)
-
     return f"s3://{bucket}/{key}"
 
 router = APIRouter(prefix="/updates", tags=["Updates"])
