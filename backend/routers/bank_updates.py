@@ -29,7 +29,7 @@ def get_model_details(db: Session = Depends(get_db), bank_name: str = None):
             "accuracy": b.accuracy,
             "update_s3_path": b.update_s3_path
         }
-        for b in db.query(Bank).filter(Bank.bank_name == bank_name).all()
+        for b in db.query(Bank1).filter(Bank1.bank_name == bank_name).all()
         ]
     except Exception as e:
         return {
