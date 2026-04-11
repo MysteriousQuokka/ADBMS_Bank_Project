@@ -150,78 +150,22 @@ def fetch_latest_model(db: Session = Depends(get_db)):
         return {"error": "Failed to fetch latest models"}
 
 @router.post("/submit-update")
-def submit_update(
-    # total_banks: int,
-    db: Session = Depends(get_db)
-):
-
-    # 1. store update
-    # update = ModelUpdate(
-    #     round_id=round_id,
-    #     bank_id=bank_id,
-    #     update_s3_path=s3_path,
-    #     samples_used=samples
-    # )
-
-    # db.add(update)
-
-    # # 2. update training round counter
-    # round = db.query(TrainingRound)\
-    #     .filter(TrainingRound.round_id == round_id)\
-    #     .first()
-
-    # round.received_updates += 1
-
-    # db.commit()
-    # log_action(
-    # actor_id=bank_id,
-    # action="MODEL_UPDATE_SUBMITTED",
-    # entity_type="MODEL_UPDATE",
-    # entity_id=update.update_id,
-    # details=f"Samples: {samples}"
-    # )
-    # # 3. check aggregation condition
-    # if round.received_updates >= round.total_banks:
-
-    #     round.status = "AGGREGATING"
-    #     db.commit()
-
-    #     from aggregator.aggregator import aggregate_models
-
-    #     s3_path = aggregate_models(round_id)
-    #     log_action(
-    #     actor_id=bank_id,
-    #     action="MODEL_UPDATE_SUBMITTED",
-    #     entity_type="MODEL_UPDATE",
-    #     entity_id=update.update_id,
-    #     details=f"Samples: {samples}"
-    #     )
-    #     round.status = "COMPLETED"
-    #     round.aggregated_model_path = s3_path
-    #     db.commit()
-
-    # return {"message": "Update received"}
+def submit_update(db: Session = Depends(get_db)):
     if models == []:
         return {"error": "No models available for aggregation"}
     round_number = db.query(TrainingRound.round_number).order_by(TrainingRound.round_number.desc()).first()
     total_banks = db.query(Bank1).filter(Bank1.status == "PARTICIPATING").count()
-    # bank_rows = db.query(Bank.total_rows).all()
+    bank_rows = db.query(Bank1.total_rows).filter(Bank1.status == "PARTICIPATING").all()
     bank_rows = [row[0] for row in bank_rows]
     # aggregate
     aggregated_model = federated_average(models, bank_rows)
     # get next round
-    latest_round = db.query(TrainingRound).order_by(
-        TrainingRound.round_number.desc()
-    ).first()
+    latest_round = db.query(TrainingRound).order_by(TrainingRound.round_number.desc()).first()
     next_round = latest_round.round_number + 1 if latest_round else 1
         # 5. Upload aggregated model
     file_name = f"global_model_v{next_round}.pkl"
     s3_key = f"global_models/{file_name}"
-    aggregated_model_path = upload_model_to_s3(
-        aggregated_model,
-        BUCKET_NAME,
-        s3_key
-    )
+    aggregated_model_path = upload_model_to_s3(aggregated_model,BUCKET_NAME,s3_key)
     new_round = TrainingRound(
         round_number=round_number[0] + 1 if round_number else 1,
         total_banks=total_banks,
