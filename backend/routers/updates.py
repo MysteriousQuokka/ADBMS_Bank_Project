@@ -2,7 +2,6 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from services.audit_service import log_action
 from database import SessionLocal
-# from models.model_update_model import ModelUpdate
 from models.bank_model1 import Bank
 from models.training_round_model1 import TrainingRound
 import boto3
