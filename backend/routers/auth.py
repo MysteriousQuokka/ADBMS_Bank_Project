@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from backend.schemas.user_schema import RegisterRequest, LoginRequest
 from backend.database import SessionLocal
 from backend.models.user_model import User
-from backend.models.bank_model1 import Bank
+from backend.models.bank_model1 import Bank1
 from backend.services.audit_service import log_action
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
@@ -48,7 +48,7 @@ def register_user(data: RegisterRequest, db: Session = Depends(get_db)):
             # return {"error": "Bank already exists"}
             raise HTTPException(status_code=400, detail="Bank already exists")
 
-        bank = Bank(bank_name=data.bank_name)
+        bank = Bank1(bank_name=data.bank_name)
         db.add(bank)
         db.commit()
         db.refresh(bank)

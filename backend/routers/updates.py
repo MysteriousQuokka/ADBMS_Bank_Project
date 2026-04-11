@@ -65,7 +65,7 @@ def get_latest_model(db: Session = Depends(get_db)):
             "accuracy": b.accuracy,
             "update_s3_path": b.update_s3_path
         }
-        for b in db.query(Bank).all()
+        for b in db.query(Bank1).all()
         ]
 
     except Exception as e:
@@ -106,7 +106,7 @@ def fetch_latest_model(db: Session = Depends(get_db)):
         # )
 
         # paths = [bank.update_s3_path for bank in banks]
-        banks = db.query(Bank).all()
+        banks = db.query(Bank1).all()
 # extract only valid s3 paths (skip NULL / empty)
         # for bank in banks:
         #     print(f"DEBUG: Bank {bank.bank_name} has update path: {bank.update_s3_path}")
@@ -199,7 +199,7 @@ def submit_update(
     if models == []:
         return {"error": "No models available for aggregation"}
     round_number = db.query(TrainingRound.round_number).order_by(TrainingRound.round_number.desc()).first()
-    total_banks = db.query(Bank).filter(Bank.status == "PARTICIPATING").count()
+    total_banks = db.query(Bank1).filter(Bank1.status == "PARTICIPATING").count()
     # bank_rows = db.query(Bank.total_rows).all()
     bank_rows = [row[0] for row in bank_rows]
     # aggregate
