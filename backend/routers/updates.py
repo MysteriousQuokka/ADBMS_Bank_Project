@@ -114,15 +114,15 @@ def fetch_latest_model(db: Session = Depends(get_db)):
         if not paths:
             return {"error": "No latest models found"}
         BUCKET_NAME = os.getenv("S3_BUCKET_NAME")
-        print("BANK COUNT:", len(banks))
-        print("PATHS:", paths)
-        print("BUCKET:", BUCKET_NAME)
+        # print("BANK COUNT:", len(banks))
+        # print("PATHS:", paths)
+        # print("BUCKET:", BUCKET_NAME)
         for row in paths:
             s3_path = row
             try:
-                print(f"Fetching: {s3_path}")
+                # print(f"Fetching: {s3_path}")
                 obj = s3.get_object(Bucket=BUCKET_NAME, Key=s3_path)
-                print("SUCCESS FETCH")
+                # print("SUCCESS FETCH")
                 weights = pickle.loads(obj["Body"].read())
                 processed_weights = {
                     k: v.cpu().numpy().tolist() if hasattr(v, "cpu") else v
