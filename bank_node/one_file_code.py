@@ -14,7 +14,7 @@ import argparse
 from dotenv import load_dotenv
 from sqlalchemy import create_engine, desc
 from sqlalchemy.orm import sessionmaker
-from bank_model1 import Bank
+from bank_model1 import Bank1
 from audit_log_model import AuditLog
 from user_model import User
 from training_round_model1 import TrainingRound
