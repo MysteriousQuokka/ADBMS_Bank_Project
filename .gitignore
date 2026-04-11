@@ -49,3 +49,4 @@ htmlcov/
 
 # Node (future frontend)
 node_modules/
+frontend/package-lock.json
