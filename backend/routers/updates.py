@@ -44,14 +44,6 @@ def get_db():
 @router.get("/latest-model")
 def get_latest_model(db: Session = Depends(get_db)):
     try:
-        # lm_query = db.query(
-        #     Bank.bank_name,
-        #     Bank.total_rows,
-        #     Bank.accuracy,
-        #     Bank.update_s3_path
-        # ).all()
-        # print("DEBUG DATA:", lm_query)
-
         log_action(
         actor_id=None,
         action="LATEST_MODEL_DETAILS_FETCHED",
@@ -78,18 +70,6 @@ def get_latest_model(db: Session = Depends(get_db)):
 
 @router.get("/fetch-model")
 def fetch_latest_model(db: Session = Depends(get_db)):
-
-    # round = db.query(TrainingRound)\
-    #     .filter(TrainingRound.status == "IN_PROGRESS")\
-    #     .first()
-
-    # if not round:
-    #     return {"error": "No active training round"}
-
-    # return {
-    #     "round_id": str(round.round_id),
-    #     "model_path": "s3://federated-fraud-models/global_models/model_v1.pkl"
-    # }
     try:
         models = []
         s3 = boto3.client("s3",
@@ -98,9 +78,6 @@ def fetch_latest_model(db: Session = Depends(get_db)):
         region_name=os.getenv("AWS_DEFAULT_REGION")
        )
         banks = db.query(Bank).all()
-# extract only valid s3 paths (skip NULL / empty)
-        # for bank in banks:
-        #     print(f"DEBUG: Bank {bank.bank_name} has update path: {bank.update_s3_path}")
         paths = [bank.update_s3_path for bank in banks if bank.update_s3_path]
         if not paths:
             return {"error": "No latest models found"}
