@@ -1,8 +1,8 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
-from services.audit_service import log_action
+from backend.services.audit_service import log_action
 from database import SessionLocal
-from models.bank_model1 import Bank
+from backend.models.bank_model1 import Bank1
 
 router = APIRouter(prefix="/bank_details", tags=["Bank Details"])
 def get_db():
