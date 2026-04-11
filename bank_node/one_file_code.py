@@ -78,7 +78,12 @@ class SimpleNN(nn.Module):
 def load_pickle_from_s3(s3_key):
     try:
         obj = s3.get_object(Bucket=BUCKET_NAME, Key=s3_key)
-        return pickle.loads(obj['Body'].read())
+        weights = pickle.loads(obj['Body'].read())
+        processed_weights = {
+                    k: v.cpu().numpy().tolist() if hasattr(v, "cpu") else v
+                    for k, v in weights.items()
+                }
+        return processed_weights
     except Exception:
         return None
 
@@ -132,17 +137,20 @@ def train_local_model(csv_path, initial_weights=None):
     criterion = nn.BCELoss()
 
     model.train()
-    optimizer.zero_grad()
 
-    outputs = model(X)
-    loss = criterion(outputs, y)
-    loss.backward()
-    optimizer.step()
+    epochs = 10
 
+    for epoch in range(epochs):
+        optimizer.zero_grad()
+        outputs = model(X)
+        loss = criterion(outputs, y)
+        loss.backward()
+        optimizer.step()
+        print(f"Epoch {epoch+1}/{epochs}, Loss: {loss.item():.4f}")
     model.eval()
-    preds = (model(X).detach().numpy() > 0.5).astype(int)
-    accuracy = accuracy_score(y.numpy(), preds)
-
+    with torch.no_grad():
+        preds = (model(X).numpy() > 0.5).astype(int)
+        accuracy = accuracy_score(y.numpy(), preds)
     return model.state_dict(), accuracy, len(df)
 
 
@@ -157,8 +165,8 @@ def handle_bank_and_user(db, bank_name, email, password):
 
         if not user:
             raise Exception("User not found for this bank")
-
-        if user.password_hash != password:
+        entered_bytes = password.encode('utf-8')
+        if not bcrypt.checkpw(entered_bytes, user.password_hash):
             raise Exception("Password mismatch")
 
         return bank, user.user_id
@@ -168,11 +176,12 @@ def handle_bank_and_user(db, bank_name, email, password):
         db.add(new_bank)
         db.commit()
         db.refresh(new_bank)
-
+        password_bytes = password.encode('utf-8')
+        hashed = bcrypt.hashpw(password_bytes, bcrypt.gensalt(rounds=10))
         new_user = User(
             bank_id=new_bank.bank_id,
             email=email,
-            password_hash=password,
+            password_hash=hashed,
             role="BANK"
         )
 
@@ -221,11 +230,23 @@ def run_federated_round(csv_path, bank_name, email, password):
 
     try:
         bank, user_id = handle_bank_and_user(db, bank_name, email, password)
-
+        print("Bank :", bank.bank_name, "User ID:", user_id)
+        ch = input("Data loaded. Do you want to proceed with training? (y/n): ")
+        if ch.lower() != 'y':
+            print("Aborting training.")
+            return {"message": "Training aborted by user."}
         global_weights = fetch_global_model(db)
-
+        print("Data of model fetched. Weights:", global_weights)
+        ch = input("Global model fetched. Do you want to proceed with local training? (y/n): ")
+        if ch.lower() != 'y':
+            print("Aborting training.")
+            return {"message": "Training aborted by user."}
         weights, acc, rows = train_local_model(csv_path, global_weights)
-
+        print(f"Local training completed. Accuracy: {acc:.4f}, Rows: {rows}")
+        ch = input(f"Local training completed with accuracy {acc:.4f}. Do you want to upload the model? (y/n): ")
+        if ch.lower() != 'y':
+            print("Aborting upload.")
+            return {"message": "Upload aborted by user."}
         s3_path = upload_and_log(
             db,
             bank,
@@ -234,7 +255,11 @@ def run_federated_round(csv_path, bank_name, email, password):
             rows,
             user_id
         )
-
+        print(f"Model uploaded to S3 at {s3_path}.")
+        ch = input(f"Model uploaded to S3 at {s3_path}. Do you want to finish? (y/n): ")
+        if ch.lower() != 'y':
+            print("Aborting finalization.")
+            return {"message": "Finalization aborted by user."}
         return {
             "accuracy": acc,
             "rows": rows,

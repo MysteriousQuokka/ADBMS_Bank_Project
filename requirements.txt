@@ -11,3 +11,4 @@ python-dotenv
 pydantic[email]
 python-multipart
 torch
+bcrypt
