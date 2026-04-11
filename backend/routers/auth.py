@@ -43,7 +43,7 @@ def register_user(data: RegisterRequest, db: Session = Depends(get_db)):
             raise HTTPException(status_code=400, detail="Bank name required for BANK_ADMIN")
 
         # Optional: prevent duplicate banks
-        existing_bank = db.query(Bank).filter(Bank.bank_name == data.bank_name).first()
+        existing_bank = db.query(Bank1).filter(Bank1.bank_name == data.bank_name).first()
         if existing_bank:
             # return {"error": "Bank already exists"}
             raise HTTPException(status_code=400, detail="Bank already exists")
@@ -93,9 +93,12 @@ def login_user(data: LoginRequest, db: Session = Depends(get_db)):
     if user.password_hash != data.password:
         return {"error": "Invalid password"}
 
+    bank = db.query(Bank1).filter(Bank1.bank_id == user.bank_id).first() if user.bank_id else None
+
     return {
         "message": "Login successful",
         "user_id": str(user.user_id),
         "role": user.role,
-        "bank_id": str(user.bank_id) if user.bank_id else None
+        "bank_id": str(user.bank_id) if user.bank_id else None,
+        "bank_name": bank.bank_name if bank else None
     }
