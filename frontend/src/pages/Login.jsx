@@ -12,6 +12,7 @@ const inp = {
   transition: "border-color 0.2s",
 };
 
+
 function Input({ icon: Icon, placeholder, type = "text", value, onChange }) {
   const [focused, setFocused] = useState(false);
   return (
@@ -45,6 +46,9 @@ function Login() {
       const res = await API.post("/auth/login", { email, password });
       
       console.log("LOGIN RESPONSE:", res.data);  // 👈 ADD THIS
+      console.log("LOGIN mail and password:", email, password);  
+
+        localStorage.setItem("user", JSON.stringify({ ...res.data, email, bank_name: res.data.bank_name }));
       
       const { role } = res.data;
 
