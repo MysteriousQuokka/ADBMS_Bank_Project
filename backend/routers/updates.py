@@ -107,27 +107,25 @@ def fetch_latest_model(db: Session = Depends(get_db)):
 
         # paths = [bank.update_s3_path for bank in banks]
         banks = db.query(Bank).all()
-        return banks #to be commented out, just for debugging
 # extract only valid s3 paths (skip NULL / empty)
+        # for bank in banks:
+        #     print(f"DEBUG: Bank {bank.bank_name} has update path: {bank.update_s3_path}")
         paths = [bank.update_s3_path for bank in banks if bank.update_s3_path]
-
         if not paths:
             return {"error": "No latest models found"}
         BUCKET_NAME = os.getenv("S3_BUCKET_NAME")
         for row in paths:
             s3_path = row
-            # bucket, key = s3_path.replace("s3://", "").split("/", 1)
             try:
                 obj = s3.get_object(Bucket=BUCKET_NAME, Key=s3_path)
-                # print(obj)
                 weights = pickle.loads(obj["Body"].read())
-                # print(weights)
-                # Optional but smart: convert tensors → numpy
-                weights = {k: v.cpu().numpy() for k, v in weights.items()}
-
-                models.append(weights)
+                processed_weights = {
+                    k: v.cpu().numpy().tolist() if hasattr(v, "cpu") else v
+                    for k, v in weights.items()
+                }
+                models.append(processed_weights)
             except Exception as e:
-                print(f"Failed to load {s3_path}: {e}")
+                print(f"Failed to load {s3_path} at line number: {e}")
         log_action(
         actor_id=None,
         action="LATEST_MODELS_FETCHED",
