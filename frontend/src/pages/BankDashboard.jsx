@@ -15,7 +15,9 @@ import Navbar from "../components/Navbar";
 import API from "../services/api";
 import { useRef } from "react";
 
-async function fetchBankDetails(bankName) {
+async function fetchBankDetails() {
+  const bankName =
+  location.state?.bankName || localStorage.getItem("bankName");
   const res = await API.get(
     `/bank_details/model-details?bank_name=${encodeURIComponent(bankName)}`,
   );
