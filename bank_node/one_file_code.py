@@ -5,6 +5,7 @@ import os
 import uuid
 import io
 import pickle
+from ADBMS_Bank_Project.backend.services.audit_service import log_action
 import boto3
 import torch
 import torch.nn as nn
@@ -188,12 +189,20 @@ def handle_bank_and_user(db, bank_name, email, password):
             bank_id=new_bank.bank_id,
             email=email,
             password_hash=hashed,
-            role="BANK"
+            role="BANK_ADMIN"
         )
 
         db.add(new_user)
         db.commit()
-
+        db.refresh(new_user)
+        # ✅ Audit log
+        log_action(
+            actor_id=user.user_id,
+            action="USER_REGISTERED",
+            entity_type="USER",
+            entity_id=user.user_id,
+            details=f"Role: 'BANK_ADMIN', Bank: {bank.bank_name if bank else 'N/A'}"
+        )
         return new_bank, new_user.user_id
 
 
