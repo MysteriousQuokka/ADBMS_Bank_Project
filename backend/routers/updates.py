@@ -38,7 +38,7 @@ def federated_average(models, bank_rows):
         # Weighted average
         agg_layer = np.tensordot(weights, layer_stack, axes=(0, 0))
         # Convert back to list (for JSON / storage)
-        agg_model[key] = agg_layer.tolist()
+        agg_model[key] = torch.tensor(agg_layer, dtype=torch.float32)
     return agg_model
 
 models = []

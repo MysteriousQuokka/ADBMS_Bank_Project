@@ -10,7 +10,7 @@ import torch
 import torch.nn as nn
 import pandas as pd
 import argparse
-
+import bcrypt
 from dotenv import load_dotenv
 from sqlalchemy import create_engine, desc
 from sqlalchemy.orm import sessionmaker
@@ -75,16 +75,21 @@ class SimpleNN(nn.Module):
 # ==============================
 # S3 HELPERS
 # ==============================
-def load_pickle_from_s3(s3_key):
+def load_pickle_from_s3(s3_uri):
     try:
-        obj = s3.get_object(Bucket=BUCKET_NAME, Key=s3_key)
+        # Parse s3://bucket/key
+        assert s3_uri.startswith("s3://"), "Invalid S3 URI"
+
+        path = s3_uri.replace("s3://", "")
+        bucket_name, key = path.split("/", 1)
+
+        obj = s3.get_object(Bucket=bucket_name, Key=key)
         weights = pickle.loads(obj['Body'].read())
-        processed_weights = {
-                    k: v.cpu().numpy().tolist() if hasattr(v, "cpu") else v
-                    for k, v in weights.items()
-                }
-        return processed_weights
-    except Exception:
+
+        return weights  # ✅ keep tensors intact
+
+    except Exception as e:
+        print("Error loading model:", e)
         return None
 
 
@@ -158,7 +163,7 @@ def train_local_model(csv_path, initial_weights=None):
 # AUTH + BANK HANDLING
 # ==============================
 def handle_bank_and_user(db, bank_name, email, password):
-    bank = db.query(Bank).filter(Bank.bank_name == bank_name).first()
+    bank = db.query(Bank1).filter(Bank1.bank_name == bank_name).first()
 
     if bank:
         user = db.query(User).filter(User.bank_id == bank.bank_id).first()
@@ -166,13 +171,14 @@ def handle_bank_and_user(db, bank_name, email, password):
         if not user:
             raise Exception("User not found for this bank")
         entered_bytes = password.encode('utf-8')
-        if not bcrypt.checkpw(entered_bytes, user.password_hash):
+        stored_hash = bytes(user.password_hash)
+        if not bcrypt.checkpw(entered_bytes, stored_hash):
             raise Exception("Password mismatch")
 
         return bank, user.user_id
 
     else:
-        new_bank = Bank(bank_name=bank_name)
+        new_bank = Bank1(bank_name=bank_name)
         db.add(new_bank)
         db.commit()
         db.refresh(new_bank)
