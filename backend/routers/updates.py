@@ -12,7 +12,7 @@ import numpy as np
 from datetime import datetime
 from zoneinfo import ZoneInfo
 import io
-
+import torch
 BUCKET_NAME = os.getenv("S3_BUCKET_NAME")
 AWS_ACCESS_KEY = os.getenv("AWS_ACCESS_KEY_ID")
 AWS_SECRET_KEY = os.getenv("AWS_SECRET_ACCESS_KEY")
