@@ -197,10 +197,10 @@ def handle_bank_and_user(db, bank_name, email, password):
         db.refresh(new_user)
         # ✅ Audit log
         log = AuditLog(
-            actor_id=user.user_id,
+            actor_id=new_user.user_id,
             action="USER_REGISTERED",
             entity_type="USER",
-            entity_id=user.user_id,
+            entity_id=new_user.user_id,
             details=f"Role: 'BANK_ADMIN', Bank: {bank.bank_name if bank else 'N/A'}"
         )
         db.add(log)
