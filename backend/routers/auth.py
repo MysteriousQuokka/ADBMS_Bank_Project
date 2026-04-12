@@ -93,10 +93,13 @@ def login_user(data: LoginRequest, db: Session = Depends(get_db)):
     entered_bytes = data.password.encode('utf-8')
     if not bcrypt.checkpw(entered_bytes, user.password_hash):
         return {"error": "Invalid password"}
+    bank = session.query(Bank1).filter(Bank1.bank_id == user.bank_id).first()
+
 
     return {
         "message": "Login successful",
         "user_id": str(user.user_id),
         "role": user.role,
-        "bank_id": str(user.bank_id) if user.bank_id else None
+        "bank_id": str(user.bank_id) if user.bank_id else None,
+        "bank_name": bank.bank_name if bank else None
     }
