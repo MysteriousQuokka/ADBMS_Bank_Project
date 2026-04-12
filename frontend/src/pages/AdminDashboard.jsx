@@ -176,7 +176,7 @@ function AdminDashboard() {
                   letterSpacing: 1.5,
                 }}
               >
-                Total Updates
+                Total Banks
               </div>
               <Users size={16} color="var(--text3)" />
             </div>

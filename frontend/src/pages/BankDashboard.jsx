@@ -19,6 +19,7 @@ async function fetchBankDetails(bankName) {
   const res = await API.get(
     `/bank_details/model-details?bank_name=${encodeURIComponent(bankName)}`,
   );
+  console.log("API Response:", res.data);
   return res.data; // ✅ Correct
 }
 
@@ -176,7 +177,7 @@ function RoundsTable({ data }) {
         >
           <thead>
             <tr style={{ background: "var(--panel)" }}>
-              {["Round", "Total Rows", "Accuracy", "S3 Path"].map((h) => (
+              {["Round", "Total Rows", "Accuracy"].map((h) => (
                 <th
                   key={h}
                   style={{
@@ -230,7 +231,7 @@ function RoundsTable({ data }) {
                     {(row.accuracy * 100).toFixed(2)}%
                   </span>
                 </td>
-                <td
+                {/* <td
                   style={{
                     padding: "10px 18px",
                     color: "var(--text2)",
@@ -243,7 +244,7 @@ function RoundsTable({ data }) {
                   }}
                 >
                   {row.update_s3_path ?? "—"}
-                </td>
+                </td> */}
               </tr>
             ))}
           </tbody>
@@ -363,7 +364,7 @@ export default function BankDashboard() {
   const bankName = user?.bank_name || "My Bank";
   const token = user?.access_token || "";
 
-  console.log("USER:", user);
+  //   console.log("USER:", user);
   console.log("BANK NAME:", bankName);
 
   const [data, setData] = useState([]);
@@ -374,7 +375,19 @@ export default function BankDashboard() {
     setLoading(true);
     fetchBankDetails(bankName)
       .then((res) => {
-        setData(Array.isArray(res) ? res : []);
+        const raw = Array.isArray(res) ? res : [];
+
+        // Transform: flatten each bank's accuracy array into per-round objects
+        const transformed = raw.flatMap((item) =>
+          (item.accuracy ?? []).map((acc, i) => ({
+            bank_name: item.bank_name,
+            total_rows: item.total_rows,
+            accuracy: acc, // single number per round
+            update_s3_path: item.update_s3_path,
+          })),
+        );
+
+        setData(transformed);
         setError(null);
       })
       .catch((err) => setError(err.message))
@@ -460,7 +473,19 @@ export default function BankDashboard() {
                 setLoading(true);
                 fetchBankDetails(bankName, token)
                   .then((res) => {
-                    setData(Array.isArray(res) ? res : []);
+                    const raw = Array.isArray(res) ? res : [];
+
+                    // Transform: flatten each bank's accuracy array into per-round objects
+                    const transformed = raw.flatMap((item) =>
+                      (item.accuracy ?? []).map((acc, i) => ({
+                        bank_name: item.bank_name,
+                        total_rows: item.total_rows,
+                        accuracy: acc, // single number per round
+                        update_s3_path: item.update_s3_path,
+                      })),
+                    );
+
+                    setData(transformed);
                     setError(null);
                   })
                   .catch((err) => setError(err.message))
@@ -604,7 +629,6 @@ export default function BankDashboard() {
         )}
 
         {/* <PklUpload bankName={bankName} token={token} /> */}
-        
       </main>
     </div>
   );
