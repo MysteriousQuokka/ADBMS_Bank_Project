@@ -58,7 +58,7 @@ function Login() {
     //   if (role === "BANK_ADMIN")    navigate("/bank");
       if (role === "BANK_ADMIN") {
             console.log("Navigating to /bank");
-            navigate("/bank");
+            navigate("/bank", { state: { bankName: response.bank_name } });
     }
       if (role === "CENTRAL_ADMIN") navigate("/admin");
       if (role === "AUDITOR")       navigate("/auditor");
