@@ -196,13 +196,15 @@ def handle_bank_and_user(db, bank_name, email, password):
         db.commit()
         db.refresh(new_user)
         # ✅ Audit log
-        log_action(
+        log = AuditLog(
             actor_id=user.user_id,
             action="USER_REGISTERED",
             entity_type="USER",
             entity_id=user.user_id,
             details=f"Role: 'BANK_ADMIN', Bank: {bank.bank_name if bank else 'N/A'}"
         )
+        db.add(log)
+        db.commit()
         return new_bank, new_user.user_id
 
 
