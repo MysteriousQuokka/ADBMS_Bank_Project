@@ -43,12 +43,12 @@ def register_user(data: RegisterRequest, db: Session = Depends(get_db)):
             raise HTTPException(status_code=400, detail="Bank name required for BANK_ADMIN")
 
         # Optional: prevent duplicate banks
-        existing_bank = db.query(Bank).filter(Bank.bank_name == data.bank_name).first()
+        existing_bank = db.query(Bank1).filter(Bank1.bank_name == data.bank_name).first()
         if existing_bank:
             # return {"error": "Bank already exists"}
             raise HTTPException(status_code=400, detail="Bank already exists")
 
-        bank = Bank(bank_name=data.bank_name)
+        bank = Bank1(bank_name=data.bank_name)
         db.add(bank)
         db.commit()
         db.refresh(bank)
