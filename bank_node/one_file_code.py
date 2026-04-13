@@ -153,7 +153,7 @@ def handle_bank_and_user(db, bank_name, email, password):
             action="USER_REGISTERED",
             entity_type="USER",
             entity_id=new_user.user_id,
-            details=f"Role: 'BANK_ADMIN', Bank: {bank.bank_name if bank else 'N/A'}"
+            details=f"Role: 'BANK_ADMIN', Bank: {new_bank.bank_name if new_bank else 'N/A'}"
         )
         db.add(log)
         db.commit()
