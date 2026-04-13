@@ -27,17 +27,14 @@ s3 = boto3.client(
 
 def federated_average(models, bank_rows):
     agg_model = {}
-    # Normalize weights (important, otherwise scaling issues)
     weights = np.array(bank_rows, dtype=np.float64)
     weights = weights / weights.sum()
     for key in models[0].keys():
-        # Convert each model's layer to numpy
         layer_stack = np.array([
             np.array(m[key], dtype=np.float32) for m in models
         ])
         # Weighted average
         agg_layer = np.tensordot(weights, layer_stack, axes=(0, 0))
-        # Convert back to list (for JSON / storage)
         agg_model[key] = torch.tensor(agg_layer, dtype=torch.float32)
     return agg_model
 
@@ -47,9 +44,7 @@ def upload_model_to_s3(model, bucket, key):
     buffer = io.BytesIO()
     pickle.dump(model, buffer)
     buffer.seek(0)
-
     s3.upload_fileobj(buffer, bucket, key)
-
     return f"s3://{bucket}/{key}"
 
 router = APIRouter(prefix="/updates", tags=["Updates"])
@@ -139,7 +134,7 @@ def submit_update(db: Session = Depends(get_db)):
     # get next round
     latest_round = db.query(TrainingRound).order_by(TrainingRound.round_number.desc()).first()
     next_round = latest_round.round_number + 1 if latest_round else 1
-        # 5. Upload aggregated model
+    # Upload aggregated model
     file_name = f"global_model_v{next_round}.pkl"
     s3_key = f"global_models/{file_name}"
     aggregated_model_path = upload_model_to_s3(aggregated_model,BUCKET_NAME,s3_key)
